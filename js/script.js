@@ -250,6 +250,33 @@ function hideModal(id) {
   }
 }
 
+// Export modal functions to window object for HTML onclick attributes
+// Make sure these are available globally, even in module context
+window.showModal = showModal;
+window.hideModal = hideModal;
+window.logout = logout; // Also expose logout function
+window.scrollToTop = scrollToTop;
+window.showLoggedInPage = showLoggedInPage;
+window.toggleUserDropdown = toggleUserDropdown;
+window.showMap = showMap;
+
+// Add this to ensure functions are exposed immediately
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Ensuring global functions are available...');
+  // Re-expose functions to make sure they're available
+  window.showModal = showModal;
+  window.hideModal = hideModal;
+  window.logout = logout;
+  window.scrollToTop = scrollToTop;
+  window.showLoggedInPage = showLoggedInPage;
+  window.toggleUserDropdown = toggleUserDropdown;
+  window.showMap = showMap;
+});
+window.refreshDashboard = refreshDashboard;
+window.closeLocationPicker = closeLocationPicker;
+window.closeReportModal = closeReportModal;
+window.closeDeleteAccountModal = closeDeleteAccountModal;
+
 let isLoggedIn = false;
 
 function setLoggedIn(state) {
@@ -4022,3 +4049,9 @@ function toggleRealTimeMap() {
     toggleBtn.querySelector(".action-text").textContent = "View Map";
   }
 }
+
+// Export modal functions to window object for HTML onclick attributes
+window.showModal = showModal;
+window.hideModal = hideModal;
+
+// Setup remaining UI interactions
