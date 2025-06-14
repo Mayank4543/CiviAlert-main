@@ -10,6 +10,20 @@
   <link rel="stylesheet" href="/style/style.css">
   <link rel="stylesheet" href="/style/password-validation.css">
   <link rel="stylesheet" href="/style/phone-auth.css">
+
+  <!-- Define modal functions globally first -->
+  <script>
+    window.showModal = function (id) {
+      document.getElementById(id).style.display = "flex";
+    };
+
+    window.hideModal = function (id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.style.display = "none";
+      }
+    };
+  </script>
 </head>
 <!-- Firebase SDKs (Use browser-safe version) -->
 
@@ -987,12 +1001,12 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
   <!-- Firebase Config -->
-  <script src="js/firebase-config.js"></script>
+  <script src="/js/firebase-config.js"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="js/password-strength.js"></script>
-  <script src="js/otp-functions.js"></script>
-  <script src="js/script.js"></script>
-  <script src="js/phone-auth.js"></script>
+  <script src="/js/password-strength.js"></script>
+  <script src="/js/otp-functions.js"></script>
+  <script src="/js/script.js"></script>
+  <script src="/js/phone-auth.js"></script>
 
   <!-- Initialize Firebase Phone Auth when page loads -->
   <script>
