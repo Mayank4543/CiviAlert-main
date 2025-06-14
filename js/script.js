@@ -1,12 +1,23 @@
-// Import Firebase services and config
-import config from "./config.js";
-import { auth, db } from "./firebase.js";
-import { generateOTP, maskPhoneNumber, resendOTP } from "./otp-functions.js";
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
+  authDomain: "civialert-af464.firebaseapp.com",
+  projectId: "civialert-af464",
+  storageBucket: "civialert-af464.firebasestorage.app",
+  messagingSenderId: "776751139563",
+  appId: "1:776751139563:web:2f14aa67c2332f144f0cae",
+  measurementId: "G-GXPVPKY0Q6",
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Initialize EmailJS with correct syntax
 (function () {
   emailjs.init({
-    publicKey: config.emailJS.publicKey,
+    publicKey: "cMX_PTg2GiI0QFlKE",
   });
 })();
 
@@ -22,12 +33,6 @@ let currentOTPData = {
 
 let resendTimer = null;
 let resendTimeLeft = 0;
-
-// Export the handler function to the window object for HTML onclick
-window.handleResendOTP = function () {
-  // Call the resendOTP function with the required parameters
-  resendOTP(currentOTPData, sendPhoneOTP);
-};
 
 // Handle report submission
 document.addEventListener("DOMContentLoaded", () => {
@@ -249,33 +254,6 @@ function hideModal(id) {
     }
   }
 }
-
-// Export modal functions to window object for HTML onclick attributes
-// Make sure these are available globally, even in module context
-window.showModal = showModal;
-window.hideModal = hideModal;
-window.logout = logout; // Also expose logout function
-window.scrollToTop = scrollToTop;
-window.showLoggedInPage = showLoggedInPage;
-window.toggleUserDropdown = toggleUserDropdown;
-window.showMap = showMap;
-
-// Add this to ensure functions are exposed immediately
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Ensuring global functions are available...');
-  // Re-expose functions to make sure they're available
-  window.showModal = showModal;
-  window.hideModal = hideModal;
-  window.logout = logout;
-  window.scrollToTop = scrollToTop;
-  window.showLoggedInPage = showLoggedInPage;
-  window.toggleUserDropdown = toggleUserDropdown;
-  window.showMap = showMap;
-});
-window.refreshDashboard = refreshDashboard;
-window.closeLocationPicker = closeLocationPicker;
-window.closeReportModal = closeReportModal;
-window.closeDeleteAccountModal = closeDeleteAccountModal;
 
 let isLoggedIn = false;
 
@@ -1150,50 +1128,49 @@ async function sendPhoneOTP(phone, name) {
   // Wait a moment before sending SMS
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  // In a real implementation, you would integrate with an SMS API service here
-  // For this demo, we'll simulate the SMS sending with a console log
-  //and show the OTP for testing purposes
-
-  console.log(
-    `[${timestamp}] SIMULATION: Sending SMS with OTP ${otp} to ${phone}`
-  );
-
-  // IMPORTANT: In a real implementation, you would use an SMS API service like Twilio
-  // Here's how you might implement it with Twilio:
-  /*
+  // Production implementation using the Twilio API
   try {
-    // This would call your backend API that connects to Twilio
-    const response = await fetch('https://your-api-endpoint/send-sms', {
-      method: 'POST',
+    // Format the message
+    const message = `Your CiviAlert verification code is: ${otp}. Valid for 5 minutes.`;
+
+    // Call our Vercel serverless function or API endpoint that handles Twilio integration
+    const response = await fetch("/api/send-sms", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         to: phone,
-        message: `Your CiviAlert verification code is: ${otp}. Valid for 5 minutes.`
-      })
+        message: message,
+        name: name,
+      }),
     });
-    
+
     const result = await response.json();
+
     if (!result.success) {
       console.error(`[${timestamp}] SMS API error:`, result.error);
-      return false;
+      // Log error but don't block registration process
+      alert(
+        `Verification code generated, but there was a problem sending SMS to ${maskPhoneNumber(
+          phone
+        )}. You may use the resend option if needed.`
+      );
+      return true; // Still return true to allow the registration process to continue
     }
+
     console.log(`[${timestamp}] SMS sent successfully via API`);
     return true;
   } catch (error) {
     console.error(`[${timestamp}] Error sending SMS:`, error);
-    return false;
+    // Log error but don't block registration process in production
+    alert(
+      `Verification code generated, but there was a problem sending it to ${maskPhoneNumber(
+        phone
+      )}. Please use the resend option.`
+    );
+    return true; // Still return true to allow the registration process to continue
   }
-  */
-
-  // For demo purposes, show OTP in alert for testing (remove in production)
-  alert(
-    `For testing purposes, your OTP is: ${otp}\nIn production, this would be sent via SMS to ${phone}`
-  );
-
-  // For demo purposes, we'll just return success
-  return true;
 }
 
 function logout() {
@@ -4049,9 +4026,3 @@ function toggleRealTimeMap() {
     toggleBtn.querySelector(".action-text").textContent = "View Map";
   }
 }
-
-// Export modal functions to window object for HTML onclick attributes
-window.showModal = showModal;
-window.hideModal = hideModal;
-
-// Setup remaining UI interactions

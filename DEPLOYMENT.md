@@ -32,10 +32,12 @@ This checklist will help you ensure that your CiviAlert application is properly 
    - [ ] Add `FIREBASE_AUTH_DOMAIN`
    - [ ] Add `FIREBASE_PROJECT_ID`
    - [ ] Add `FIREBASE_STORAGE_BUCKET`
-   - [ ] Add `FIREBASE_MESSAGING_SENDER_ID`
-   - [ ] Add `FIREBASE_APP_ID`
+   - [ ] Add `FIREBASE_MESSAGING_SENDER_ID` - [ ] Add `FIREBASE_APP_ID`
    - [ ] Add `FIREBASE_MEASUREMENT_ID`
    - [ ] Add `EMAILJS_PUBLIC_KEY`
+   - [ ] Add `TWILIO_ACCOUNT_SID` (for SMS OTP functionality)
+   - [ ] Add `TWILIO_AUTH_TOKEN` (for SMS OTP functionality)
+   - [ ] Add `TWILIO_PHONE_NUMBER` (for SMS OTP functionality)
 
 2. **Deploy to Vercel**
 
@@ -95,7 +97,7 @@ For production-ready OTP verification:
    - [ ] Twilio
    - [ ] MessageBird
    - [ ] AWS SNS
-   - [ ] Other: ******\_******
+   - [ ] Other: **\*\***\_**\*\***
 
 2. **Integration**
    - [ ] Create serverless function for SMS sending

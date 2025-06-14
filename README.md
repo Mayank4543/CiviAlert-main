@@ -23,10 +23,21 @@ The application uses phone-based OTP verification for user registration:
 
 To enable actual SMS sending in production:
 
-1. Sign up for an SMS service like Twilio, MessageBird, or AWS SNS
-2. Uncomment and configure the SMS sending code in `sendPhoneOTP` function in `script.js`
-3. Deploy a serverless function or API endpoint to handle SMS sending securely
-4. Update the fetch URL in the code to point to your API endpoint
+1. Sign up for an SMS service like Twilio
+2. Set up the required environment variables in your Vercel project:
+   - `TWILIO_ACCOUNT_SID` - Your Twilio account SID
+   - `TWILIO_AUTH_TOKEN` - Your Twilio auth token
+   - `TWILIO_PHONE_NUMBER` - Your Twilio phone number (must be purchased in Twilio)
+3. The project includes a serverless API function at `/api/send-sms.js` that handles SMS sending securely
+4. The `sendPhoneOTP` function in `script.js` will automatically use this endpoint in production
+
+### Twilio Setup Instructions
+
+1. Create an account on [Twilio](https://www.twilio.com)
+2. Navigate to the Twilio Console and find your Account SID and Auth Token
+3. Purchase a phone number with SMS capabilities from Twilio
+4. Add the Twilio credentials as environment variables in your Vercel project settings
+5. Deploy your project to Vercel
 
 ### Security Considerations
 
@@ -45,6 +56,7 @@ To enable actual SMS sending in production:
 - `js/password-strength.js` - Password validation
 - `style/style.css` - Main application styles
 - `style/password-validation.css` - Password validation styles
+- `api/send-sms.js` - Serverless function to handle SMS sending via Twilio
 - `.env` - Environment variables for local development
 - `vercel.json` - Vercel deployment configuration
 

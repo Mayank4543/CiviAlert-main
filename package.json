@@ -18,6 +18,7 @@
   "author": "Mayank Rathore",
   "license": "MIT",
   "dependencies": {
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "twilio": "^4.19.3"
   }
 }

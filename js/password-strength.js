@@ -1,5 +1,5 @@
 // Password strength meter for registration
-export function initializePasswordStrengthMeter() {
+function initializePasswordStrengthMeter() {
   const passwordInput = document.getElementById("regPassword");
   if (!passwordInput) return;
 
@@ -8,11 +8,11 @@ export function initializePasswordStrengthMeter() {
     const meterContainer = document.createElement("div");
     meterContainer.className = "password-strength-container";
     meterContainer.innerHTML = `
-      <div class="password-strength-meter" id="password-strength-meter">
-        <div class="strength-bar"></div>
-      </div>
-      <div class="password-strength-text" id="password-strength-text">Password strength</div>
-    `;
+        <div class="password-strength-meter" id="password-strength-meter">
+          <div class="strength-bar"></div>
+        </div>
+        <div class="password-strength-text" id="password-strength-text">Password strength</div>
+      `;
 
     // Insert after password input
     passwordInput.parentNode.insertBefore(
@@ -44,20 +44,8 @@ export function initializePasswordStrengthMeter() {
   });
 }
 
-// Initialize password meter when document is ready
-document.addEventListener("DOMContentLoaded", function () {
-  // Set up modal event listeners
-  const registerLink = document.getElementById("registerLink");
-  if (registerLink) {
-    registerLink.addEventListener("click", function () {
-      // Initialize after a small delay to ensure modal is visible
-      setTimeout(initializePasswordStrengthMeter, 100);
-    });
-  }
-});
-
 // Measure password strength
-export function measurePasswordStrength(password) {
+function measurePasswordStrength(password) {
   if (!password) {
     return { level: "empty", text: "Enter a password", percentage: 0 };
   }
@@ -97,3 +85,15 @@ export function measurePasswordStrength(password) {
 
   return { level, text, percentage };
 }
+
+// Initialize password meter when document is ready
+document.addEventListener("DOMContentLoaded", function () {
+  // Set up modal event listeners
+  const registerLink = document.getElementById("registerLink");
+  if (registerLink) {
+    registerLink.addEventListener("click", function () {
+      // Initialize after a small delay to ensure modal is visible
+      setTimeout(initializePasswordStrengthMeter, 100);
+    });
+  }
+});
