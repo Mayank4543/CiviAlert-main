@@ -1128,49 +1128,50 @@ async function sendPhoneOTP(phone, name) {
   // Wait a moment before sending SMS
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  // Production implementation using the Twilio API
-  try {
-    // Format the message
-    const message = `Your CiviAlert verification code is: ${otp}. Valid for 5 minutes.`;
+  // In a real implementation, you would integrate with an SMS API service here
+  // For this demo, we'll simulate the SMS sending with a console log
+  // and show the OTP for testing purposes
 
-    // Call our Vercel serverless function or API endpoint that handles Twilio integration
-    const response = await fetch("/api/send-sms", {
-      method: "POST",
+  console.log(
+    `[${timestamp}] SIMULATION: Sending SMS with OTP ${otp} to ${phone}`
+  );
+
+  // IMPORTANT: In a real implementation, you would use an SMS API service like Twilio
+  // Here's how you might implement it with Twilio:
+  /*
+  try {
+    // This would call your backend API that connects to Twilio
+    const response = await fetch('https://your-api-endpoint/send-sms', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         to: phone,
-        message: message,
-        name: name,
-      }),
+        message: `Your CiviAlert verification code is: ${otp}. Valid for 5 minutes.`
+      })
     });
-
+    
     const result = await response.json();
-
     if (!result.success) {
       console.error(`[${timestamp}] SMS API error:`, result.error);
-      // Log error but don't block registration process
-      alert(
-        `Verification code generated, but there was a problem sending SMS to ${maskPhoneNumber(
-          phone
-        )}. You may use the resend option if needed.`
-      );
-      return true; // Still return true to allow the registration process to continue
+      return false;
     }
-
     console.log(`[${timestamp}] SMS sent successfully via API`);
     return true;
   } catch (error) {
     console.error(`[${timestamp}] Error sending SMS:`, error);
-    // Log error but don't block registration process in production
-    alert(
-      `Verification code generated, but there was a problem sending it to ${maskPhoneNumber(
-        phone
-      )}. Please use the resend option.`
-    );
-    return true; // Still return true to allow the registration process to continue
+    return false;
   }
+  */
+
+  // For demo purposes, show OTP in alert for testing (remove in production)
+  alert(
+    `For testing purposes, your OTP is: ${otp}\nIn production, this would be sent via SMS to ${phone}`
+  );
+
+  // For demo purposes, we'll just return success
+  return true;
 }
 
 function logout() {
