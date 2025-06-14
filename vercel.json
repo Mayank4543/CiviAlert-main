@@ -11,15 +11,14 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "env": {
-    "FIREBASE_API_KEY": "@firebase_api_key",
-    "FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
-    "FIREBASE_PROJECT_ID": "@firebase_project_id",
-    "FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
-    "FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
-    "FIREBASE_APP_ID": "@firebase_app_id",
-    "FIREBASE_MEASUREMENT_ID": "@firebase_measurement_id",
-    "EMAILJS_PUBLIC_KEY": "@emailjs_public_key"
+  ],  "env": {
+    "FIREBASE_API_KEY": "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
+    "FIREBASE_AUTH_DOMAIN": "civialert-af464.firebaseapp.com",
+    "FIREBASE_PROJECT_ID": "civialert-af464",
+    "FIREBASE_STORAGE_BUCKET": "civialert-af464.appspot.com",
+    "FIREBASE_MESSAGING_SENDER_ID": "776751139563",
+    "FIREBASE_APP_ID": "1:776751139563:web:2f14aa67c2332f144f0cae",
+    "FIREBASE_MEASUREMENT_ID": "G-GXPVPKY0Q6",
+    "EMAILJS_PUBLIC_KEY": "cMX_PTg2GiI0QFlKE"
   }
 }

@@ -23,6 +23,12 @@ let currentOTPData = {
 let resendTimer = null;
 let resendTimeLeft = 0;
 
+// Export the handler function to the window object for HTML onclick
+window.handleResendOTP = function () {
+  // Call the resendOTP function with the required parameters
+  resendOTP(currentOTPData, sendPhoneOTP);
+};
+
 // Handle report submission
 document.addEventListener("DOMContentLoaded", () => {
   const reportForm = document.querySelector("#loggedInReport form");
@@ -1119,7 +1125,7 @@ async function sendPhoneOTP(phone, name) {
 
   // In a real implementation, you would integrate with an SMS API service here
   // For this demo, we'll simulate the SMS sending with a console log
-  // and show the OTP for testing purposes
+  //and show the OTP for testing purposes
 
   console.log(
     `[${timestamp}] SIMULATION: Sending SMS with OTP ${otp} to ${phone}`
