@@ -1,0 +1,23 @@
+{
+  "name": "civialert",
+  "version": "1.0.0",
+  "description": "CiviAlert - Civic Reporting Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve .",
+    "build": "echo 'Nothing to build, static site'"
+  },
+  "keywords": [
+    "civic",
+    "reporting",
+    "firebase",
+    "otp",
+    "verification"
+  ],
+  "author": "Mayank Rathore",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}

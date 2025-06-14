@@ -981,33 +981,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <!-- EmailJS SDK -->
+  <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-  <script type="module">
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
+  <!-- Firebase v9 UMD-compatible scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
-      authDomain: "civialert-af464.firebaseapp.com",
-      projectId: "civialert-af464",
-      storageBucket: "civialert-af464.appspot.com",
-      messagingSenderId: "776751139563",
-      appId: "1:776751139563:web:2f14aa67c2332f144f0cae",
-      measurementId: "G-GXPVPKY0Q6"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-  </script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="js/password-strength.js"></script>
-  <script src="js/otp-functions.js"></script>
-  <script src="js/script.js"></script>
+
+  <!-- Application scripts -->
+  <script src="js/config.js" type="module"></script>
+  <script src="js/firebase.js" type="module"></script>
+  <script src="js/password-strength.js" type="module"></script>
+  <script src="js/otp-functions.js" type="module"></script>
+  <script src="js/script.js" type="module"></script>
 </body>
 
 </html>

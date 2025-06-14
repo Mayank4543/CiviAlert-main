@@ -1,23 +1,12 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
-  authDomain: "civialert-af464.firebaseapp.com",
-  projectId: "civialert-af464",
-  storageBucket: "civialert-af464.firebasestorage.app",
-  messagingSenderId: "776751139563",
-  appId: "1:776751139563:web:2f14aa67c2332f144f0cae",
-  measurementId: "G-GXPVPKY0Q6",
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+// Import Firebase services and config
+import config from "./config.js";
+import { auth, db } from "./firebase.js";
+import { generateOTP, maskPhoneNumber, resendOTP } from "./otp-functions.js";
 
 // Initialize EmailJS with correct syntax
 (function () {
   emailjs.init({
-    publicKey: "cMX_PTg2GiI0QFlKE",
+    publicKey: config.emailJS.publicKey,
   });
 })();
 

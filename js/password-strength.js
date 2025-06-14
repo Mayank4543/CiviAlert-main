@@ -1,5 +1,5 @@
 // Password strength meter for registration
-function initializePasswordStrengthMeter() {
+export function initializePasswordStrengthMeter() {
   const passwordInput = document.getElementById("regPassword");
   if (!passwordInput) return;
 
@@ -44,8 +44,20 @@ function initializePasswordStrengthMeter() {
   });
 }
 
+// Initialize password meter when document is ready
+document.addEventListener("DOMContentLoaded", function () {
+  // Set up modal event listeners
+  const registerLink = document.getElementById("registerLink");
+  if (registerLink) {
+    registerLink.addEventListener("click", function () {
+      // Initialize after a small delay to ensure modal is visible
+      setTimeout(initializePasswordStrengthMeter, 100);
+    });
+  }
+});
+
 // Measure password strength
-function measurePasswordStrength(password) {
+export function measurePasswordStrength(password) {
   if (!password) {
     return { level: "empty", text: "Enter a password", percentage: 0 };
   }
@@ -85,15 +97,3 @@ function measurePasswordStrength(password) {
 
   return { level, text, percentage };
 }
-
-// Initialize password meter when document is ready
-document.addEventListener("DOMContentLoaded", function () {
-  // Set up modal event listeners
-  const registerLink = document.getElementById("registerLink");
-  if (registerLink) {
-    registerLink.addEventListener("click", function () {
-      // Initialize after a small delay to ensure modal is visible
-      setTimeout(initializePasswordStrengthMeter, 100);
-    });
-  }
-});
