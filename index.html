@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CiviAlert - Civic Reporting Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="style/style.css">
+  <link rel="stylesheet" href="style/password-validation.css">
+</head>
+<!-- Firebase SDKs (Use browser-safe version) -->
+
+<body>
+  <!-- Header for logged out state -->
+  <header id="loggedOutHeader">
+    <div class="logo">CiviAlert</div>
+    <nav id="navLinks">
+      <a onclick="scrollToTop()" id="homeNav">Home</a>
+      <a href="#features" id="featuresNav">Features</a>
+      <a href="#how-it-works" id="howItWorksNav">How It Works</a>
+      <a onclick="showModal('loginModal')" id="loginLink">Login</a>
+      <a onclick="showModal('registerModal')" id="registerLink">Register</a>
+      <a onclick="logout()" id="logoutLink" class="hidden-logout">Logout</a>
+    </nav>
+  </header>
+
+  <!-- Header for logged in state -->
+  <header id="loggedInHeader" class="logged-in-header hidden">
+    <div class="logo">CiviAlert</div>
+
+    <!-- Top navigation (shown when Home is active) -->
+    <nav id="topNavigation" class="top-navigation hidden">
+      <button class="top-nav-btn active" onclick="showLoggedInPage('home', this)">Home</button>
+      <button class="top-nav-btn" onclick="showLoggedInPage('dashboard', this)">Dashboard</button>
+      <button class="top-nav-btn" onclick="showLoggedInPage('report', this)">Report Incident</button>
+      <button class="top-nav-btn" onclick="showLoggedInPage('reports', this)">My Reports</button>
+      <button class="top-nav-btn" onclick="showLoggedInPage('settings', this)">Settings</button>
+    </nav>
+
+    <div class="user-section">
+      <div class="user-dropdown">
+        <button class="user-toggle" onclick="toggleUserDropdown()">
+          <span>User</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu" id="userDropdown">
+          <a id="userProfileInfo" class="user-profile-info">Not logged in</a>
+          <a onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content wrapper for logged in state -->
+  <div id="loggedInLayout" class="logged-in-layout hidden">
+    <nav class="sidebar">
+      <button class="sidebar-btn active" onclick="showLoggedInPage('home', this)">Home</button>
+      <button class="sidebar-btn" onclick="showLoggedInPage('dashboard', this)">Dashboard</button>
+      <button class="sidebar-btn" onclick="showLoggedInPage('report', this)">Report Incident</button>
+      <button class="sidebar-btn" onclick="showLoggedInPage('reports', this)">My Reports</button>
+      <button class="sidebar-btn" onclick="showLoggedInPage('settings', this)">Settings</button>
+    </nav>
+
+    <main class="main-content">
+      <div id="loggedInHome" class="logged-in-content active">
+        <!-- Landing page content when logged in -->
+        <div class="hero">
+          <h1>Real-Time Civic Incident Reporting in Your Locality</h1>
+          <div class="cta-buttons">
+            <button onclick="showLoggedInPage('report', document.querySelector('.sidebar-btn[onclick*=report]'))">Report
+              Now</button>
+            <button class="secondary" onclick="showMap()">Explore Map</button>
+          </div>
+          <div class="map-container" id="mapSectionLoggedIn">
+            <div id="mapLoggedIn"></div>
+          </div>
+        </div>
+
+        <!-- Features and How It Works sections will be dynamically added here -->
+      </div>
+
+      <div id="loggedInDashboard" class="logged-in-content">
+        <!-- Enhanced Dashboard with Real Data -->
+        <div class="dashboard-container">
+          <div class="dashboard-header">
+            <h2>📊 Dashboard Overview</h2>
+            <p>Real-time statistics and insights from your community reports</p>
+            <button class="btn btn-secondary" onclick="refreshDashboard()" id="refreshDashboardBtn">
+              🔄 Refresh Data
+            </button>
+          </div>
+
+          <!-- Statistics Cards -->
+          <section class="dashboard-stats">
+            <div class="stats-grid">
+              <div class="stat-card total-reports">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <h3 id="dashTotalReports">0</h3>
+                  <p>Total Reports</p>
+                  <small class="stat-change" id="totalReportsChange">+0 this week</small>
+                </div>
+              </div>
+              <div class="stat-card pending-reports">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-content">
+                  <h3 id="dashPendingReports">0</h3>
+                  <p>Pending Reports</p>
+                  <small class="stat-change" id="pendingReportsChange">+0 new</small>
+                </div>
+              </div>
+              <div class="stat-card resolved-reports">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                  <h3 id="dashResolvedReports">0</h3>
+                  <p>Resolved Issues</p>
+                  <small class="stat-change" id="resolvedReportsChange">+0 resolved</small>
+                </div>
+              </div>
+              <div class="stat-card my-reports">
+                <div class="stat-icon">👤</div>
+                <div class="stat-content">
+                  <h3 id="dashMyReports">0</h3>
+                  <p>My Reports</p>
+                  <small class="stat-change" id="myReportsChange">+0 submitted</small>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recent Activity and Quick Actions -->
+          <div class="dashboard-grid">
+            <div class="map-container" id="realTimeMapContainer" style="display: none;">
+              <div id="realTimeMap" style="height: 450px; width: 100%; border-radius: 8px; border: 2px solid #ccc;">
+              </div>
+            </div>
+
+            <section class="recent-activity">
+              <div class="section-header">
+                <h3>📈 Recent Activity</h3>
+                <button class="btn btn-outline btn-sm"
+                  onclick="showLoggedInPage('reports', document.querySelector('.sidebar-btn[onclick*=reports]'))">
+                  View All
+                </button>
+              </div>
+              <div class="activity-list" id="recentActivityList">
+                <div class="loading-placeholder">
+                  <div class="spinner-small"></div>
+                  <span>Loading recent activity...</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="quick-actions">
+              <div class="section-header">
+                <h3>⚡ Quick Actions</h3>
+              </div>
+              <div class="action-buttons">
+                <button class="action-btn report-btn"
+                  onclick="showLoggedInPage('report', document.querySelector('.sidebar-btn[onclick*=report]'))">
+                  <span class="action-icon">📝</span>
+                  <span class="action-text">Report Incident</span>
+                </button>
+                <button class="action-btn map-btn" onclick="toggleRealTimeMap()" id="dashboardMapToggleBtn">
+                  <span class="action-icon">🗺️</span>
+                  <span class="action-text">View Map</span>
+                </button>
+
+                <button class="action-btn settings-btn"
+                  onclick="showLoggedInPage('settings', document.querySelector('.sidebar-btn[onclick*=settings]'))">
+                  <span class="action-icon">⚙️</span>
+                  <span class="action-text">Settings</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <!-- Categories Breakdown -->
+          <section class="categories-section">
+            <div class="section-header">
+              <h3>🏷️ Reports by Category</h3>
+              <select id="categoryTimeFilter" onchange="updateCategoryData()">
+                <option value="all">All Time</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+            <div class="categories-grid" id="categoriesGrid">
+              <div class="loading-placeholder">
+                <div class="spinner-small"></div>
+                <span>Loading category data...</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Map Section -->
+          <section class="dashboard-map-section">
+            <div class="section-header">
+              <h3>🗺️ Community Reports Map</h3>
+              <div class="map-controls">
+                <button class="toggle-btn" onclick="toggleDashboardMap()" id="dashboardMapToggle">
+                  Hide Map
+                </button>
+                <select id="mapStatusFilter" onchange="updateMapFilter()">
+                  <option value="all">All Reports</option>
+                  <option value="pending">Pending Only</option>
+                  <option value="resolved">Resolved Only</option>
+                </select>
+              </div>
+            </div>
+            <div class="map-container" id="dashboardMapContainer">
+              <div id="map2" class="dashboard-map"></div>
+              <div class="map-legend">
+                <div class="legend-item">
+                  <div class="legend-marker pending"></div>
+                  <span>Pending</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker resolved"></div>
+                  <span>Resolved</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker my-report"></div>
+                  <span>My Reports</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div id="loggedInReport" class="logged-in-content">
+        <!-- Enhanced Report Incident Form -->
+        <div class="report-form-container">
+          <h2>Report an Incident</h2>
+          <p class="form-description">Help make your community safer by reporting incidents in your area. All reports
+            are reviewed by local authorities.</p>
+
+          <form id="reportIncidentForm" onsubmit="submitReport(event)">
+            <div class="form-group">
+              <label for="loggedInIncidentTitle">Incident Title <span class="required">*</span></label>
+              <input id="loggedInIncidentTitle" type="text" placeholder="Brief description of the incident" required
+                maxlength="100" />
+              <small>Keep it concise and clear (max 100 characters)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="loggedInIncidentCategory">Category <span class="required">*</span></label>
+              <select id="loggedInIncidentCategory" required>
+                <option value="">Select a category</option>
+                <option value="road_safety">Road Safety</option>
+                <option value="infrastructure">Infrastructure</option>
+                <option value="public_safety">Public Safety</option>
+                <option value="environmental">Environmental</option>
+                <option value="utilities">Utilities</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="loggedInIncidentDescription">Description <span class="required">*</span></label>
+              <textarea id="loggedInIncidentDescription" placeholder="Provide detailed information about the incident"
+                required rows="5" maxlength="1000"></textarea>
+              <small><span id="charCount">0</span>/1000 characters</small>
+            </div>
+
+            <div class="form-group">
+              <label for="loggedInIncidentLocation">Location <span class="required">*</span></label>
+              <div class="location-input-group">
+                <input id="loggedInIncidentLocation" type="text" placeholder="Enter address or description of location"
+                  required />
+                <button type="button" class="map-picker-btn" onclick="openLocationPicker()"
+                  title="Select location on map">
+                  📍
+                </button>
+              </div>
+              <small>Be as specific as possible to help authorities locate the incident</small>
+            </div>
+
+            <div class="form-group">
+              <label for="loggedInIncidentPriority">Priority Level</label>
+              <select id="loggedInIncidentPriority">
+                <option value="low">Low - Can wait for regular attention</option>
+                <option value="medium" selected>Medium - Should be addressed soon</option>
+                <option value="high">High - Requires immediate attention</option>
+                <option value="urgent">Urgent - Emergency situation</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="loggedInIncidentImages">Attach Images (Optional)</label>
+              <input type="file" id="loggedInIncidentImages" accept="image/*" multiple />
+              <small>Upload photos to help illustrate the incident (max 5 images, 10MB each)</small>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-item">
+                <input type="checkbox" id="allowContact" checked>
+                <span class="checkmark"></span>
+                Allow authorities to contact me for additional information
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" onclick="clearReportForm()">Clear Form</button>
+              <button type="submit" class="btn btn-primary" id="submitReportBtn">
+                📝 Submit Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="loggedInReports" class="logged-in-content">
+        <!-- Enhanced My Reports Page -->
+        <div class="reports-page-container">
+          <!-- Stats Overview -->
+          <section class="stats-section">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <h3 id="totalReports">0</h3>
+                  <p>Total Reports</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-content">
+                  <h3 id="pendingReports">0</h3>
+                  <p>Pending</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                  <h3 id="resolvedReports">0</h3>
+                  <p>Resolved</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-content">
+                  <h3 id="rejectedReports">0</h3>
+                  <p>Rejected</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Filter and Search -->
+          <section class="filter-section">
+            <div class="filter-controls">
+              <div class="search-box">
+                <label for="searchInput" class="sr-only">Search reports</label>
+                <input type="text" id="searchInput" placeholder="Search reports..." />
+                <button onclick="searchReports()" title="Search reports" aria-label="Search reports">🔍</button>
+              </div>
+              <div class="filter-dropdown">
+                <label for="statusFilter">Filter by status</label>
+                <select id="statusFilter" onchange="filterReports()" title="Filter reports by status">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div class="filter-dropdown">
+                <label for="dateFilter">Filter by date range</label>
+                <select id="dateFilter" onchange="filterReports()" title="Filter reports by date range">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="year">This Year</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="refreshReports()" title="Refresh reports list"
+                aria-label="Refresh reports list">🔄 Refresh</button>
+            </div>
+          </section>
+
+          <!-- Map Section -->
+          <section class="map-section">
+            <div class="section-header">
+              <h2>📍 Reports Map</h2>
+              <button class="toggle-btn" onclick="toggleReportsMapView()" id="reportsMapToggle">Hide Map</button>
+            </div>
+            <div class="map-container" id="reportsMapContainer">
+              <div id="reportsMap" class="reports-map-display"></div>
+              <div class="map-legend">
+                <div class="legend-item">
+                  <div class="legend-marker pending"></div>
+                  <span>Pending</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker in-progress"></div>
+                  <span>In Progress</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker resolved"></div>
+                  <span>Resolved</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker rejected"></div>
+                  <span>Rejected</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Reports List -->
+          <section class="reports-list-section">
+            <div class="section-header">
+              <h2>📝 My Reports</h2>
+              <div class="view-options">
+                <button class="view-btn active" data-view="grid" onclick="changeReportsView('grid')">⊞ Grid</button>
+                <button class="view-btn" data-view="list" onclick="changeReportsView('list')">☰ List</button>
+              </div>
+            </div>
+
+            <div id="reportsLoadingSpinner" class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Loading your reports...</p>
+            </div>
+
+            <div id="noMyReports" class="no-reports">
+              <div class="no-reports-icon">📭</div>
+              <h3>No Reports Found</h3>
+              <p>You haven't submitted any reports yet, or no reports match your current filters.</p>
+              <button class="btn btn-primary"
+                onclick="showLoggedInPage('report', document.querySelector('.sidebar-btn[onclick*=report]'))">Create
+                Your First Report</button>
+            </div>
+
+            <div id="myReportsList" class="reports-grid"></div>
+          </section>
+        </div>
+      </div>
+
+      <div id="loggedInSettings" class="logged-in-content">
+        <!-- Enhanced Settings Page -->
+        <div class="settings-container">
+          <!-- User Profile Section -->
+          <section class="settings-section">
+            <div class="section-header">
+              <div class="section-title">
+                <h2>👤 Profile Information</h2>
+                <p>Manage your personal information and account details</p>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="profile-overview">
+                <div class="profile-avatar">
+                  <div class="avatar-placeholder" id="userAvatar">
+                    <span id="userInitials">U</span>
+                  </div>
+                  <button class="avatar-upload-btn" onclick="uploadAvatar()">
+                    📷 Change Photo
+                  </button>
+                </div>
+                <div class="profile-info">
+                  <h3 id="userDisplayName">Loading...</h3>
+                  <p id="userEmail">Loading...</p>
+                  <p class="join-date">Member since: <span id="joinDate">Loading...</span></p>
+                </div>
+                <button class="btn btn-secondary" onclick="toggleProfileEdit()">
+                  ✏️ Edit Profile
+                </button>
+              </div>
+
+              <div id="profileEditForm" class="settings-form hidden">
+                <form id="updateProfileForm" onsubmit="updateProfile(event)">
+                  <div class="form-group">
+                    <label for="profileName">Full Name</label>
+                    <input type="text" id="profileName" required placeholder="Enter your full name">
+                    <small>This name will be displayed on your reports</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="profileEmail">Email Address</label>
+                    <input type="email" id="profileEmail" required placeholder="Enter your email">
+                    <small>Used for notifications and account recovery</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="profilePhone">Phone Number</label>
+                    <input type="tel" id="profilePhone" placeholder="Enter your phone number">
+                    <small>Optional - for emergency notifications</small>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelProfileEdit()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- Security Section -->
+          <section class="settings-section">
+            <div class="section-header">
+              <div class="section-title">
+                <h2>🔒 Security & Privacy</h2>
+                <p>Manage your password and security preferences</p>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="security-item">
+                <div class="security-info">
+                  <h3>Password</h3>
+                  <p>Last changed: <span id="passwordLastChanged">Never</span></p>
+                </div>
+                <button class="btn btn-secondary" onclick="togglePasswordForm()">
+                  🔑 Change Password
+                </button>
+              </div>
+
+              <div id="passwordChangeForm" class="settings-form hidden">
+                <form id="changePasswordForm" onsubmit="changePassword(event)">
+                  <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required placeholder="Enter current password">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required placeholder="Enter new password">
+                    <div class="password-strength">
+                      <div class="strength-bar">
+                        <div class="strength-fill" id="passwordStrength"></div>
+                      </div>
+                      <small id="passwordStrengthText">Password strength</small>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirm new password">
+                    <small id="passwordMatch" class="error-text hidden">Passwords do not match</small>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelPasswordChange()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">🔒 Update Password</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- Notification Settings -->
+          <section class="settings-section">
+            <div class="section-header">
+              <div class="section-title">
+                <h2>🔔 Notifications</h2>
+                <p>Configure how you receive alerts and updates</p>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <!-- Browser Notifications -->
+              <div class="notification-item">
+                <div class="notification-header">
+                  <h3>Browser Notifications</h3>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="browserNotifications" onchange="toggleBrowserNotifications()">
+                    <label for="browserNotifications" class="switch-label">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <p>Get instant notifications about nearby incidents and updates</p>
+                <div class="notification-status">
+                  <span id="notificationStatus" class="status-badge disabled">Not enabled</span>
+                </div>
+              </div>
+
+              <!-- Geofenced Alerts -->
+              <div class="notification-item">
+                <div class="notification-header">
+                  <h3>Location-Based Alerts</h3>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="locationAlerts" onchange="toggleLocationAlerts()">
+                    <label for="locationAlerts" class="switch-label">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <p>Receive alerts for incidents within your specified radius</p>
+
+                <div id="locationSettings" class="location-settings hidden">
+                  <div class="form-group">
+                    <label for="alertRadius">Alert Radius (km)</label>
+                    <div class="range-input">
+                      <input type="range" id="alertRadius" min="1" max="50" value="5" oninput="updateRadiusDisplay()"
+                        title="Set alert radius in kilometers">
+                      <span id="radiusDisplay">5 km</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Notifications -->
+              <div class="notification-item">
+                <div class="notification-header">
+                  <h3>Email Notifications</h3>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="emailNotifications" onchange="toggleEmailNotifications()">
+                    <label for="emailNotifications" class="switch-label">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <p>Receive email summaries and important updates</p>
+
+                <div id="emailSettings" class="email-settings hidden">
+                  <div class="checkbox-group">
+                    <label class="checkbox-item">
+                      <input type="checkbox" id="dailyDigest">
+                      <span class="checkmark"></span>
+                      Daily incident digest
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" id="weeklyReport">
+                      <span class="checkmark"></span>
+                      Weekly area report
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" id="statusUpdates">
+                      <span class="checkmark"></span>
+                      Report status updates
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Data Management -->
+          <section class="settings-section">
+            <div class="section-header">
+              <div class="section-title">
+                <h2>📊 Data Management</h2>
+                <p>Export, backup, or delete your data</p>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="data-item">
+                <div class="data-info">
+                  <h3>Export Data</h3>
+                  <p>Download a copy of your reports and account data</p>
+                </div>
+                <button class="btn btn-secondary" onclick="exportUserData()">
+                  📥 Export Data
+                </button>
+              </div>
+
+              <div class="data-item">
+                <div class="data-info">
+                  <h3>Clear Cache</h3>
+                  <p>Clear stored map data and temporary files</p>
+                </div>
+                <button class="btn btn-outline" onclick="clearCache()">
+                  🗑️ Clear Cache
+                </button>
+              </div>
+
+              <div class="data-item danger-zone">
+                <div class="data-info">
+                  <h3>Delete Account</h3>
+                  <p>Permanently delete your account and all associated data</p>
+                </div>
+                <button class="btn btn-danger" onclick="showDeleteAccountModal()">
+                  ⚠️ Delete Account
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+  </div>
+
+  <!-- Landing page for logged out state -->
+  <div id="landingPage">
+    <div class="hero">
+      <h1>Real-Time Civic Incident Reporting in Your Locality</h1>
+      <div class="cta-buttons">
+        <button onclick="toggleSection('report')" id="reportNowBtn">Report Now</button>
+        <button class="secondary" onclick="showMap()">Explore Map</button>
+      </div>
+      <div class="map-container" id="mapSection">
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <div id="infoSections">
+      <section class="features" id="features">
+        <h2>Features Preview</h2>
+        <div class="features-preview">
+          <div class="feature-item"><img src="https://img.icons8.com/ios-filled/50/map.png" alt="Real-Time Map" />
+            <p>Real-Time Map</p>
+          </div>
+          <div class="feature-item"><img src="https://img.icons8.com/ios-filled/50/marker.png"
+              alt="Geo-Fenced Notifications" />
+            <p>Geo-Fenced Notifications</p>
+          </div>
+          <div class="feature-item"><img src="https://img.icons8.com/ios-filled/50/user-shield.png"
+              alt="Verified Users Only" />
+            <p>Verified Users Only</p>
+          </div>
+          <div class="feature-item"><img src="https://img.icons8.com/color/50/groups.png" alt="Community Threads" />
+            <p>Community Threads</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="how-it-works" id="how-it-works">
+        <h2>How It Works</h2>
+        <div class="how-steps">
+          <div class="step"><img src="https://img.icons8.com/ios-filled/50/id-verified.png" alt="Register & Verify" />
+            <p>Register & Verify</p>
+          </div>
+          <div class="step"><img src="https://img.icons8.com/ios-filled/50/alarm.png" alt="Report Incidents" />
+            <p>Report Incidents</p>
+          </div>
+          <div class="step"><img src="https://img.icons8.com/ios-filled/50/chat.png" alt="Stay Alert & Informed" />
+            <p>Stay Alert & Informed</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Old dashboard page (hidden) -->
+  <div id="dashboardPage" class="hidden-dashboard">
+    <nav class="dashboard-nav">
+      <button class="nav-btn active" onclick="showPage('dashboard', this)">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('report', this)">Report Incident</button>
+      <button class="nav-btn" onclick="showPage('reports', this)">View Reports</button>
+      <button class="nav-btn" onclick="showPage('settings', this)">Settings</button>
+    </nav>
+
+    <div id="dashboard" class="content active">
+      <h2>Welcome to the Dashboard</h2>
+      <p>Overview of civic reports and statistics.</p>
+      <div class="dashboard-cards">
+        <div class="card">
+          <h3>Total Reports</h3>
+          <p>125</p>
+        </div>
+        <div class="card">
+          <h3>Pending Reviews</h3>
+          <p>42</p>
+        </div>
+        <div class="card">
+          <h3>Resolved Issues</h3>
+          <p>83</p>
+        </div>
+      </div>
+      <h3 class="city-map-title">City Map Overview</h3>
+      <div id="map2"></div>
+    </div>
+
+    <div id="report" class="content">
+      <h2>Report an Incident</h2>
+      <form onsubmit="event.preventDefault();">
+        <label for="incidentTitle">Incident Title:</label><br />
+        <input id="incidentTitle" type="text" placeholder="Enter incident title" /><br /><br />
+        <label for="incidentDescription">Description:</label><br />
+        <textarea id="incidentDescription" placeholder="Describe the incident"></textarea><br /><br />
+        <label for="incidentLocation">Location:</label><br />
+        <div class="location-input-group">
+          <input id="incidentLocation" type="text" placeholder="Enter location or click map to select" readonly />
+          <button type="button" class="map-picker-btn" onclick="openLocationPicker()" title="Select location on map">
+            📍
+          </button>
+        </div><br /><br />
+        <button type="submit">Submit Report</button>
+      </form>
+    </div>
+
+    <div id="reports" class="content">
+      <h2>All Submitted Reports</h2>
+      <ul>
+        <li><strong>Pothole</strong> - Street near park - Pending</li>
+        <li><strong>Streetlight</strong> - 5th Avenue - Resolved</li>
+        <li><strong>Water Leakage</strong> - Central Road - Pending</li>
+      </ul>
+    </div>
+
+    <div id="settings" class="content">
+      <h2>Admin Settings</h2>
+      <p>Manage your account settings below:</p>
+      <div class="settings-buttons">
+        <button onclick="alert('Change Password clicked')">Change Password</button>
+        <button onclick="alert('Update Profile clicked')">Update Profile</button>
+        <button onclick="alert('Notification Settings clicked')">Notification Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 CiviAlert. All rights reserved.
+  </footer>
+
+  <!-- Modals -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="hideModal('loginModal')">&times;</span>
+      <h3>Login</h3>
+      <label for="loginEmail">Email Address</label>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button onclick="loginUser()">Login</button>
+    </div>
+  </div>
+
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="hideModal('registerModal')">&times;</span>
+      <h3>Register</h3>
+      <label for="regName">Full Name</label>
+      <input type="text" id="regName" placeholder="Full Name" required minlength="2" />
+      <label for="regEmail">Email Address</label>
+      <input type="email" id="regEmail" placeholder="Email" required />
+      <label for="regPhone">Phone Number</label>
+      <input type="tel" id="regPhone" placeholder="Phone Number (e.g., +91XXXXXXXXXX)" required
+        pattern="^\+[0-9]{1,3}[0-9]{10}$" />
+      <div class="phone-hint">Enter phone number with country code (e.g., +911234567890)</div>
+      <label for="regPassword">Password</label>
+      <input type="password" id="regPassword" placeholder="Password" required minlength="6" />
+      <div class="password-hint">Password must be at least 6 characters. For better security, include uppercase letters,
+        numbers, and special characters.</div>
+      <button onclick="registerUser()">Register</button>
+      <div class="form-footer">
+        Already have an account? <a href="#" onclick="hideModal('registerModal'); showModal('loginModal')">Login</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone OTP Verification Modal -->
+  <div id="otpVerificationModal" class="modal">
+    <div class="modal-content otp-modal">
+      <span class="close" onclick="hideModal('otpVerificationModal')">&times;</span>
+      <div class="otp-header">
+        <h3>Verify Your Phone</h3>
+        <p class="otp-subtitle">We've sent a 6-digit code to <span id="otpPhoneDisplay"></span></p>
+      </div>
+
+      <div class="otp-form">
+        <fieldset class="otp-fieldset">
+          <legend class="sr-only">Enter 6-digit verification code</legend>
+          <div class="otp-input-container">
+            <label for="otpInput1" class="sr-only">First digit of verification code</label>
+            <input type="text" id="otpInput1" class="otp-digit" maxlength="1"
+              aria-label="First digit of verification code" title="Enter first digit of verification code" />
+
+            <label for="otpInput2" class="sr-only">Second digit of verification code</label>
+            <input type="text" id="otpInput2" class="otp-digit" maxlength="1"
+              aria-label="Second digit of verification code" title="Enter second digit of verification code" />
+
+            <label for="otpInput3" class="sr-only">Third digit of verification code</label>
+            <input type="text" id="otpInput3" class="otp-digit" maxlength="1"
+              aria-label="Third digit of verification code" title="Enter third digit of verification code" />
+
+            <label for="otpInput4" class="sr-only">Fourth digit of verification code</label>
+            <input type="text" id="otpInput4" class="otp-digit" maxlength="1"
+              aria-label="Fourth digit of verification code" title="Enter fourth digit of verification code" />
+
+            <label for="otpInput5" class="sr-only">Fifth digit of verification code</label>
+            <input type="text" id="otpInput5" class="otp-digit" maxlength="1"
+              aria-label="Fifth digit of verification code" title="Enter fifth digit of verification code" />
+
+            <label for="otpInput6" class="sr-only">Sixth digit of verification code</label>
+            <input type="text" id="otpInput6" class="otp-digit" maxlength="1"
+              aria-label="Sixth digit of verification code" title="Enter sixth digit of verification code" />
+          </div>
+        </fieldset>
+
+        <div class="otp-timer-container">
+          <div id="otpTimer" class="otp-timer">05:00</div>
+          <div id="otpExpired" class="otp-expired hidden">OTP has expired</div>
+        </div>
+
+        <button id="verifyOtpBtn" class="verify-otp-btn" onclick="verifyOTP()">
+          <span class="btn-text">Verify Phone</span>
+          <span class="btn-loading hidden">
+            <span class="spinner-small"></span>
+            Verifying...
+          </span>
+        </button>
+
+        <div class="resend-section">
+          <p>Didn't receive the code?</p>
+          <button id="resendOtpBtn" class="resend-btn" onclick="resendOTP()" disabled>
+            Resend OTP (<span id="resendTimer">60</span>s)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location Picker Modal -->
+  <div id="locationPickerModal" class="modal">
+    <div class="modal-content location-picker-modal">
+      <button class="close" onclick="closeLocationPicker()" title="Close modal">&times;</button>
+      <h3>Select Incident Location</h3>
+
+      <!-- Help section using details/summary -->
+      <details class="location-help-details">
+        <summary>How to select location</summary>
+        <div class="location-help-content">
+          Your current location is shown with a blue marker for reference. Click anywhere within the blue circle to
+          select where the incident occurred. If you don't click anywhere, your current location will be used as the
+          incident location.
+        </div>
+      </details>
+
+      <div id="locationPickerMap" class="location-picker-map">
+        <div id="mapLoadingSpinner" class="map-loading-overlay">
+          <div class="spinner"></div>
+          <p>Loading map and getting your location...</p>
+        </div>
+      </div>
+      <div class="location-picker-actions">
+        <button onclick="confirmLocation()" class="confirm-btn">Use My Current Location</button>
+        <button onclick="useMarkedLocation()" class="marked-location-btn" disabled>Use Marked Location</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Account Confirmation Modal -->
+  <div id="deleteAccountModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>⚠️ Delete Account</h3>
+        <button class="close-btn" onclick="closeDeleteAccountModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="warning-box">
+          <p><strong>This action cannot be undone!</strong></p>
+          <p>Deleting your account will:</p>
+          <ul>
+            <li>Permanently delete all your reports</li>
+            <li>Remove your profile information</li>
+            <li>Cancel all notifications</li>
+            <li>Delete your account data</li>
+          </ul>
+        </div>
+
+        <div class="confirmation-input">
+          <label for="deleteConfirmation">Type "DELETE" to confirm:</label>
+          <input type="text" id="deleteConfirmation" placeholder="DELETE">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeDeleteAccountModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteAccount()" id="confirmDeleteBtn" disabled>
+          Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div id="messageContainer" class="message-container"></div>
+
+  <!-- Firebase v9 UMD-compatible scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <script type="module">
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
+      authDomain: "civialert-af464.firebaseapp.com",
+      projectId: "civialert-af464",
+      storageBucket: "civialert-af464.appspot.com",
+      messagingSenderId: "776751139563",
+      appId: "1:776751139563:web:2f14aa67c2332f144f0cae",
+      measurementId: "G-GXPVPKY0Q6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+  </script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/password-strength.js"></script>
+  <script src="js/otp-functions.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
+</html>
