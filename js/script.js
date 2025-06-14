@@ -4039,3 +4039,6 @@ function toggleRealTimeMap() {
     toggleBtn.querySelector(".action-text").textContent = "View Map";
   }
 }
+
+// Make important functions globally available for production
+window.showMap = showMap;

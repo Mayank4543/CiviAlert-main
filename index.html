@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="/style/password-validation.css">
   <link rel="stylesheet" href="/style/phone-auth.css">
 
+  <!-- Global functions script -->
+  <script src="/js/global-modals.js"></script>
+
   <!-- Define modal functions globally first -->
   <script>
     window.showModal = function (id) {
@@ -22,6 +25,26 @@
       if (modal) {
         modal.style.display = "none";
       }
+    };
+
+    window.showMap = function () {
+      let mapSection, mapId;
+      if (window.isLoggedIn) {
+        mapSection = document.getElementById("mapSectionLoggedIn");
+        mapId = "mapLoggedIn";
+      } else {
+        mapSection = document.getElementById("mapSection");
+        mapId = "map";
+      }
+
+      if (mapSection.style.display === "block") {
+        mapSection.style.display = "none";
+        return;
+      }
+      mapSection.style.display = "block";
+
+      const mapKey = window.isLoggedIn ? "loggedInMapInitialized" : "mainMapInitialized";
+      // The rest of map initialization is handled in script.js
     };
   </script>
 </head>
