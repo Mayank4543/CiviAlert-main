@@ -260,38 +260,58 @@ let isLoggedIn = false;
 function setLoggedIn(state) {
   isLoggedIn = state;
 
+  // Safely get elements and update UI
+  const safeUpdateElement = (id, displayStyle) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = displayStyle;
+    }
+  };
+
   // Toggle headers
   if (state) {
-    document.getElementById("loggedOutHeader").style.display = "none";
-    document.getElementById("loggedInHeader").classList.remove("hidden");
-    document.getElementById("loggedInHeader").style.display = "flex";
+    safeUpdateElement("loggedOutHeader", "none");
+    const loggedInHeader = document.getElementById("loggedInHeader");
+    if (loggedInHeader) {
+      loggedInHeader.classList.remove("hidden");
+      loggedInHeader.style.display = "flex";
+    }
   } else {
-    document.getElementById("loggedOutHeader").style.display = "flex";
-    document.getElementById("loggedInHeader").classList.add("hidden");
-    document.getElementById("loggedInHeader").style.display = "none";
+    safeUpdateElement("loggedOutHeader", "flex");
+    const loggedInHeader = document.getElementById("loggedInHeader");
+    if (loggedInHeader) {
+      loggedInHeader.classList.add("hidden");
+      loggedInHeader.style.display = "none";
+    }
   }
 
   // Toggle layouts
   if (state) {
-    document.getElementById("landingPage").style.display = "none";
-    document.getElementById("loggedInLayout").classList.remove("hidden");
-    document.getElementById("loggedInLayout").style.display = "flex";
+    safeUpdateElement("landingPage", "none");
+    const loggedInLayout = document.getElementById("loggedInLayout");
+    if (loggedInLayout) {
+      loggedInLayout.classList.remove("hidden");
+      loggedInLayout.style.display = "flex";
+    }
   } else {
-    document.getElementById("landingPage").style.display = "block";
-    document.getElementById("loggedInLayout").classList.add("hidden");
-    document.getElementById("loggedInLayout").style.display = "none";
+    safeUpdateElement("landingPage", "block");
+    const loggedInLayout = document.getElementById("loggedInLayout");
+    if (loggedInLayout) {
+      loggedInLayout.classList.add("hidden");
+      loggedInLayout.style.display = "none";
+    }
   }
 
-  document.getElementById("dashboardPage").style.display = "none";
+  safeUpdateElement("dashboardPage", "none");
 
   if (!state) {
     // Logged out state
-    document.getElementById("homeNav").style.display = "inline";
-    document.getElementById("dashboardNav").style.display = "none";
-    document.getElementById("featuresNav").style.display = "inline";
-    document.getElementById("howItWorksNav").style.display = "inline";
-    document.getElementById("loginLink").style.display = "inline";
-    document.getElementById("registerLink").style.display = "inline";
+    safeUpdateElement("homeNav", "inline");
+    safeUpdateElement("dashboardNav", "none");
+    safeUpdateElement("featuresNav", "inline");
+    safeUpdateElement("howItWorksNav", "inline");
+    safeUpdateElement("loginLink", "inline");
+    safeUpdateElement("registerLink", "inline");
     const infoSections = document.getElementById("infoSections");
     if (infoSections) infoSections.style.display = "block";
   } else {
@@ -299,7 +319,11 @@ function setLoggedIn(state) {
     const homeSidebarBtn = document.querySelector(
       '.sidebar-btn[onclick*="home"]'
     );
-    showLoggedInPage("home", homeSidebarBtn);
+    if (homeSidebarBtn) {
+      showLoggedInPage("home", homeSidebarBtn);
+    } else {
+      console.warn("Home sidebar button not found");
+    }
   }
 }
 
@@ -554,6 +578,10 @@ function announceToScreenReader(message) {
 auth.onAuthStateChanged((user) => {
   console.log("Auth state changed:", user ? user.email : "No user");
 
+  // Check if we're in the OTP verification process
+  const isInOTPProcess = Boolean(currentOTPData && currentOTPData.userData);
+  console.log("Is in OTP process:", isInOTPProcess);
+
   if (user) {
     // Check if user is verified before allowing access
     db.collection("users")
@@ -595,10 +623,13 @@ auth.onAuthStateChanged((user) => {
             }
           } else {
             // User is not verified - only sign them out if this is NOT during OTP verification
-            if (
-              !currentOTPData.userData ||
-              currentOTPData.email !== user.email
-            ) {
+            if (isInOTPProcess) {
+              console.log(
+                "User in OTP verification process, keeping signed in"
+              );
+              // Keep them signed in but don't set logged in state
+              setLoggedIn(false);
+            } else {
               console.log(
                 "Unverified user detected, but not in OTP process, signing out"
               );
@@ -606,37 +637,32 @@ auth.onAuthStateChanged((user) => {
               alert(
                 "Please verify your phone number to complete registration."
               );
-            } else {
-              console.log(
-                "User in OTP verification process, keeping signed in"
-              );
-              // Keep them signed in but don't set logged in state
-              setLoggedIn(false);
             }
           }
         } else {
           // User document doesn't exist - only sign out if not in OTP process
-          if (!currentOTPData.userData) {
-            console.log("User document not found, signing out");
-            auth.signOut();
-          } else {
+          if (isInOTPProcess) {
             console.log(
               "User document not found, but in OTP process, keeping signed in"
             );
+            // This is expected during registration - we're creating the document
+          } else {
+            console.log("User document not found, signing out");
+            auth.signOut();
           }
         }
       })
       .catch((error) => {
         console.error("Error checking user verification:", error);
         // Don't automatically sign out on database errors during OTP process
-        if (!currentOTPData.userData) {
-          console.log("Database error and not in OTP process, signing out");
-          auth.signOut();
-        } else {
+        if (isInOTPProcess) {
           console.log(
             "Database error during OTP process, keeping user signed in"
           );
           setLoggedIn(false);
+        } else {
+          console.log("Database error and not in OTP process, signing out");
+          auth.signOut();
         }
       });
   } else {
@@ -1801,10 +1827,33 @@ async function loadUserSettings() {
   if (!auth.currentUser) return;
 
   try {
+    // First try to load settings from localStorage for immediate UI update
+    try {
+      const localSettings = localStorage.getItem("userSettings");
+      if (localSettings) {
+        const parsedSettings = safeJSONParse(localSettings);
+        if (parsedSettings) {
+          userSettings = { ...userSettings, ...parsedSettings };
+        }
+      }
+    } catch (localStorageError) {
+      console.warn(
+        "Could not load settings from localStorage:",
+        localStorageError
+      );
+    }
+
     // Load user data into profile section
-    document.getElementById("userDisplayName").textContent =
-      auth.currentUser.displayName || "No name set";
-    document.getElementById("userEmail").textContent = auth.currentUser.email;
+    const userDisplayName = document.getElementById("userDisplayName");
+    if (userDisplayName) {
+      userDisplayName.textContent =
+        auth.currentUser.displayName || "No name set";
+    }
+
+    const userEmail = document.getElementById("userEmail");
+    if (userEmail) {
+      userEmail.textContent = auth.currentUser.email;
+    }
 
     // Format and display join date from Firebase Auth metadata
     const creationTime = auth.currentUser.metadata.creationTime;
@@ -1843,14 +1892,21 @@ async function loadUserSettings() {
       );
     }
 
-    document.getElementById("joinDate").textContent = joinDate;
+    const joinDateElement = document.getElementById("joinDate");
+    if (joinDateElement) {
+      joinDateElement.textContent = joinDate;
+    }
 
     // Update avatar
     const initials = getUserInitials(
       auth.currentUser.displayName,
       auth.currentUser.email
     );
-    document.getElementById("userInitials").textContent = initials;
+
+    const userInitialsElement = document.getElementById("userInitials");
+    if (userInitialsElement) {
+      userInitialsElement.textContent = initials;
+    }
 
     // Load profile form data
     const profileName = document.getElementById("profileName");
@@ -1860,13 +1916,18 @@ async function loadUserSettings() {
     if (profileEmail) profileEmail.value = auth.currentUser.email || "";
 
     // Load settings from Firestore
-    const settingsDoc = await db
-      .collection("userSettings")
-      .doc(auth.currentUser.uid)
-      .get();
-    if (settingsDoc.exists) {
-      const firestoreSettings = settingsDoc.data();
-      userSettings = { ...userSettings, ...firestoreSettings };
+    try {
+      const settingsDoc = await db
+        .collection("userSettings")
+        .doc(auth.currentUser.uid)
+        .get();
+      if (settingsDoc.exists) {
+        const firestoreSettings = settingsDoc.data();
+        userSettings = { ...userSettings, ...firestoreSettings };
+      }
+    } catch (firestoreError) {
+      console.warn("Could not load settings from Firestore:", firestoreError);
+      // Continue with localStorage settings if available
     }
 
     updateSettingsUI();
@@ -1874,7 +1935,10 @@ async function loadUserSettings() {
   } catch (error) {
     console.error("Error loading user settings:", error);
     // Set fallback join date
-    document.getElementById("joinDate").textContent = "Unknown";
+    const joinDateElement = document.getElementById("joinDate");
+    if (joinDateElement) {
+      joinDateElement.textContent = "Unknown";
+    }
     updateSettingsUI(); // Use defaults
   }
 }
@@ -1908,12 +1972,19 @@ function updateSettingsUI() {
   if (statusUpdates)
     statusUpdates.checked = userSettings.notifications.statusUpdates;
 
-  // Update notification status
-  updateNotificationStatus();
+  // Update notification status if the function exists
+  if (typeof updateNotificationStatus === "function") {
+    updateNotificationStatus();
+  }
 
-  // Show/hide conditional settings
-  toggleLocationSettings();
-  toggleEmailSettings();
+  // Show/hide conditional settings if the functions exist
+  if (typeof toggleLocationSettings === "function") {
+    toggleLocationSettings();
+  }
+
+  if (typeof toggleEmailSettings === "function") {
+    toggleEmailSettings();
+  }
 }
 
 // Profile Management
@@ -2768,32 +2839,48 @@ async function exportUserData() {
     };
 
     // Get user reports
-    const reportsSnapshot = await db
-      .collection("reports")
-      .where("userId", "==", auth.currentUser.uid)
-      .get();
+    try {
+      const reportsSnapshot = await db
+        .collection("reports")
+        .where("userId", "==", auth.currentUser.uid)
+        .get();
 
-    userData.reports = reportsSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate()?.toISOString(),
-    }));
+      userData.reports = reportsSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate
+            ? data.createdAt.toDate().toISOString()
+            : null,
+        };
+      });
+    } catch (reportsError) {
+      console.error("Error fetching reports:", reportsError);
+      userData.reports = [];
+      userData.reportsError = "Failed to load reports";
+    }
 
     // Download as JSON
-    const dataStr = JSON.stringify(userData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    try {
+      const dataStr = JSON.stringify(userData, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `civialert-data-${
-      new Date().toISOString().split("T")[0]
-    }.json`;
-    a.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `civialert-data-${
+        new Date().toISOString().split("T")[0]
+      }.json`;
+      a.click();
 
-    URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
 
-    showSettingsMessage("Data exported successfully!", "success");
+      showSettingsMessage("Data exported successfully!", "success");
+    } catch (exportError) {
+      console.error("Error creating export file:", exportError);
+      showSettingsMessage("Failed to create export file.", "error");
+    }
   } catch (error) {
     console.error("Error exporting data:", error);
     showSettingsMessage("Failed to export data.", "error");
@@ -2803,20 +2890,33 @@ async function exportUserData() {
 function clearCache() {
   try {
     // Clear specific localStorage keys (you can also use localStorage.clear() if needed)
-    localStorage.removeItem("mapCache");
-    localStorage.removeItem("reportCache");
-    localStorage.removeItem("userSettings");
+    try {
+      localStorage.removeItem("mapCache");
+      localStorage.removeItem("reportCache");
+      localStorage.removeItem("userSettings");
+    } catch (localStorageError) {
+      console.error("Error clearing localStorage:", localStorageError);
+    }
 
     // Clear sessionStorage
-    sessionStorage.clear();
+    try {
+      sessionStorage.clear();
+    } catch (sessionStorageError) {
+      console.error("Error clearing sessionStorage:", sessionStorageError);
+    }
 
     // Clear Cache Storage
     if ("caches" in window) {
-      caches.keys().then(function (names) {
-        for (let name of names) {
-          caches.delete(name);
-        }
-      });
+      caches
+        .keys()
+        .then(function (names) {
+          for (let name of names) {
+            caches.delete(name);
+          }
+        })
+        .catch(function (cacheError) {
+          console.error("Error clearing caches:", cacheError);
+        });
     }
 
     showSettingsMessage("All caches cleared successfully!", "success");
@@ -2911,6 +3011,18 @@ function saveSettingsLocally() {
     localStorage.setItem("userSettings", JSON.stringify(userSettings));
   } catch (error) {
     console.error("Error saving settings locally:", error);
+  }
+}
+
+// Helper function to safely parse JSON
+function safeJSONParse(jsonString, defaultValue = null) {
+  if (!jsonString) return defaultValue;
+
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return defaultValue;
   }
 }
 
