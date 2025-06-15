@@ -10,18 +10,6 @@ const firebaseConfig = {
   measurementId: "G-GXPVPKY0Q6",
 };
 
-// Make sure modal functions are globally available
-window.showModal = function (id) {
-  document.getElementById(id).style.display = "flex";
-};
-
-window.hideModal = function (id) {
-  const modal = document.getElementById(id);
-  if (modal) {
-    modal.style.display = "none";
-  }
-};
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -4039,6 +4027,3 @@ function toggleRealTimeMap() {
     toggleBtn.querySelector(".action-text").textContent = "View Map";
   }
 }
-
-// Make important functions globally available for production
-window.showMap = showMap;

@@ -7,46 +7,11 @@
   <title>CiviAlert - Civic Reporting Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="/style/style.css">
-  <link rel="stylesheet" href="/style/password-validation.css">
-  <link rel="stylesheet" href="/style/phone-auth.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+4v8Ps+keNNXp1jHf8iSWGh55tqf6vL5N+kTb1zvA=" crossorigin="" />
 
-  <!-- Global functions script -->
-  <script src="/js/global-modals.js"></script>
-
-  <!-- Define modal functions globally first -->
-  <script>
-    window.showModal = function (id) {
-      document.getElementById(id).style.display = "flex";
-    };
-
-    window.hideModal = function (id) {
-      const modal = document.getElementById(id);
-      if (modal) {
-        modal.style.display = "none";
-      }
-    };
-
-    window.showMap = function () {
-      let mapSection, mapId;
-      if (window.isLoggedIn) {
-        mapSection = document.getElementById("mapSectionLoggedIn");
-        mapId = "mapLoggedIn";
-      } else {
-        mapSection = document.getElementById("mapSection");
-        mapId = "map";
-      }
-
-      if (mapSection.style.display === "block") {
-        mapSection.style.display = "none";
-        return;
-      }
-      mapSection.style.display = "block";
-
-      const mapKey = window.isLoggedIn ? "loggedInMapInitialized" : "mainMapInitialized";
-      // The rest of map initialization is handled in script.js
-    };
-  </script>
+  <link rel="stylesheet" href="style/style.css">
+  <link rel="stylesheet" href="style/password-validation.css">
 </head>
 <!-- Firebase SDKs (Use browser-safe version) -->
 
@@ -736,7 +701,7 @@
         <button class="secondary" onclick="showMap()">Explore Map</button>
       </div>
       <div class="map-container" id="mapSection">
-        <div id="map"></div>
+        <div id="map" style="height: 100vh;"></div>
       </div>
     </div>
 
@@ -894,10 +859,8 @@
         <h3>Verify Your Phone</h3>
         <p class="otp-subtitle">We've sent a 6-digit code to <span id="otpPhoneDisplay"></span></p>
       </div>
-      <div id="recaptcha-container" class="recaptcha-container"></div>
 
       <div class="otp-form">
-        <div id="phone-auth-error" class="error-message">An error occurred. Please try again.</div>
         <fieldset class="otp-fieldset">
           <legend class="sr-only">Enter 6-digit verification code</legend>
           <div class="otp-input-container">
@@ -942,7 +905,7 @@
 
         <div class="resend-section">
           <p>Didn't receive the code?</p>
-          <button id="resendOtpBtn" class="resend-btn" onclick="resendPhoneOTP()" disabled>
+          <button id="resendOtpBtn" class="resend-btn" onclick="resendOTP()" disabled>
             Resend OTP (<span id="resendTimer">60</span>s)
           </button>
         </div>
@@ -1023,27 +986,31 @@
   <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-  <!-- Firebase Config -->
-  <script src="/js/firebase-config.js"></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="/js/password-strength.js"></script>
-  <script src="/js/otp-functions.js"></script>
-  <script src="/js/script.js"></script>
-  <script src="/js/phone-auth.js"></script>
+  <script type="module">
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
 
-  <!-- Initialize Firebase Phone Auth when page loads -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Initialize phone auth when register link is clicked
-      const registerLink = document.getElementById("registerLink");
-      if (registerLink) {
-        registerLink.addEventListener("click", function () {
-          // Initialize after a small delay to ensure modal is visible
-          setTimeout(initializePhoneAuth, 500);
-        });
-      }
-    });
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3Y8YBwGVXpsWaNJgbNZHhyIzaW9W_Bdo",
+      authDomain: "civialert-af464.firebaseapp.com",
+      projectId: "civialert-af464",
+      storageBucket: "civialert-af464.appspot.com",
+      messagingSenderId: "776751139563",
+      appId: "1:776751139563:web:2f14aa67c2332f144f0cae",
+      measurementId: "G-GXPVPKY0Q6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
   </script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/password-strength.js"></script>
+  <script src="js/otp-functions.js"></script>
+  <script src="js/script.js"></script>
 </body>
 
 </html>
